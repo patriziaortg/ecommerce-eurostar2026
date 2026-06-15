@@ -1,0 +1,437 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "E-Commerce REST API",
+    "description": "API for user registration, login, health checks, and checkout with payment rules.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3030",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Service status"
+    },
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Checkout",
+      "description": "Order checkout"
+    },
+    {
+      "name": "Docs",
+      "description": "API documentation"
+    }
+  ],
+  "paths": {
+    "/healthcheck": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email or username already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login an existing user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout": {
+      "post": {
+        "tags": ["Checkout"],
+        "summary": "Create an order checkout",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/swagger": {
+      "get": {
+        "tags": ["Docs"],
+        "summary": "Get the OpenAPI document",
+        "responses": {
+          "200": {
+            "description": "OpenAPI specification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Complete OpenAPI document"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-06-15T12:00:00.000Z"
+          }
+        },
+        "required": ["status", "timestamp"]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "dave"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "dave@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "mypassword"
+          }
+        },
+        "required": ["username", "email", "password"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "alice@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "example": "alice"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "alice@example.com"
+          }
+        },
+        "required": ["id", "username", "email"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "<jwt-token>"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          }
+        },
+        "required": ["token", "user"]
+      },
+      "CheckoutItemRequest": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 2
+          }
+        },
+        "required": ["productId", "quantity"]
+      },
+      "CheckoutRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutItemRequest"
+            }
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["cash", "credit_card"],
+            "example": "cash"
+          }
+        },
+        "required": ["items", "paymentMethod"]
+      },
+      "CheckoutOrderItem": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Wireless Headphones"
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 2
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "float",
+            "example": 79.99
+          },
+          "lineTotal": {
+            "type": "number",
+            "format": "float",
+            "example": 159.98
+          }
+        },
+        "required": ["productId", "name", "quantity", "unitPrice", "lineTotal"]
+      },
+      "CheckoutOrder": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutOrderItem"
+            }
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["cash", "credit_card"],
+            "example": "cash"
+          },
+          "subtotal": {
+            "type": "number",
+            "format": "float",
+            "example": 199.97
+          },
+          "discount": {
+            "type": "number",
+            "format": "float",
+            "example": 19.99
+          },
+          "total": {
+            "type": "number",
+            "format": "float",
+            "example": 179.98
+          }
+        },
+        "required": ["items", "paymentMethod", "subtotal", "discount", "total"]
+      },
+      "CheckoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Checkout completed successfully"
+          },
+          "order": {
+            "$ref": "#/components/schemas/CheckoutOrder"
+          }
+        },
+        "required": ["message", "order"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid email or password"
+          }
+        },
+        "required": ["error"]
+      }
+    }
+  }
+}
