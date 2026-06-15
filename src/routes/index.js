@@ -9,6 +9,6 @@ const router = express.Router();
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/checkout', authenticate, checkoutController.checkout);
-router.get('/swagger', swaggerController.getSwaggerSpec);
+router.get('/swagger.json', swaggerController.getSwaggerSpec);
 
 module.exports = router;
